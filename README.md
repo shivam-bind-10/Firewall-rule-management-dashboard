@@ -29,7 +29,7 @@ python app.py
 
 On macOS/Linux, activate with `source .venv/bin/activate` instead. Then open <http://127.0.0.1:5000>.
 
-The first launch creates `instance/fwdash.sqlite`, inserts 15 example rules and 200 demonstration log entries from the preceding 24 hours, and starts the local web server. Data persists in that SQLite file. Set `FWDASH_DATABASE` to use a different database path, or `PORT` to choose another local port. IBM Plex fonts are loaded from Google Fonts when available; system fonts are used offline.
+The first launch creates `instance/fwdash.sqlite`, inserts 15 example rules and 200 demonstration log entries from the preceding 24 hours, and starts the local web server. Data persists in that SQLite file. Set `FWDASH_DATABASE` to use a different database path, or `PORT` to choose another local port. IBM Plex Sans and JetBrains Mono are loaded from Google Fonts when available; system fonts are used offline.
 
 ## What’s included
 

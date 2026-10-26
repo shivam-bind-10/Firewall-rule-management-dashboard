@@ -32,12 +32,6 @@ const formatTime = stamp => {
   const date = new Date(stamp);
   return Number.isNaN(date.getTime()) ? "--:--" : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
 };
-const sparkline = seed => {
-  const heights = Array.from({ length: 9 }, (_, i) => ((seed * 7 + i * 11 + i * seed) % 9) + 2);
-  return `<svg class="spark" viewBox="0 0 32 12" aria-hidden="true">${heights.map((height, i) =>
-    `<rect x="${i * 4}" y="${12 - height}" width="2" height="${height}" fill="currentColor" opacity="${0.35 + i * 0.07}"/>`
-  ).join("")}</svg>`;
-};
 const setStatus = () => {
   const total = state.rules.length;
   document.getElementById("nav-rule-count").textContent = total;
@@ -68,23 +62,23 @@ function renderOverview() {
     <span class="recent-description"><span class="mono">${escapeHtml(log.src)}:${escapeHtml(log.port)}</span> → <span class="mono">${escapeHtml(log.dst)}</span> · ${escapeHtml(log.rule_name || "Implicit deny")}</span>
     <span class="mini-badge ${actionClass(log.action)}">${escapeHtml(log.action)}</span></div>`).join("") : noData("No simulated activity yet.");
   content.innerHTML = `${heading("Overview", "A live view of the simulated policy set and recent packet decisions.",
-    `<a class="button small" href="#/simulator">Run simulation <span class="button-icon">↗</span></a>`)}
+    `<a class="button small" href="#/simulator">Run simulation</a>`)}
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-label">Total rules <span class="stat-indicator">RULESET</span></div><div class="stat-value">${stats.total}</div><div class="stat-foot">${stats.active} enabled for evaluation</div></div>
       <div class="stat-card"><div class="stat-label">Active rules <span class="stat-indicator">STATUS</span></div><div class="stat-value">${stats.active}</div><div class="stat-foot">${stats.total - stats.active} currently disabled</div></div>
-      <div class="stat-card"><div class="stat-label">Allow / deny <span class="stat-indicator">POLICY</span></div><div class="stat-value"><span style="color:var(--allow)">${stats.allow}</span><span class="muted"> / </span><span style="color:var(--deny)">${stats.deny}</span></div><div class="stat-foot"><span class="green">${allowRatio}% allow</span> by rule count</div></div>
-      <div class="stat-card"><div class="stat-label">Blocked today <span class="stat-indicator">24H</span></div><div class="stat-value">${stats.blocked_today}</div><div class="stat-foot">${stats.hits} matched packet evaluations</div></div>
+      <div class="stat-card"><div class="stat-label">Allow / deny</div><div class="stat-value"><span style="color:var(--allow)">${stats.allow}</span><span class="muted"> / </span><span style="color:var(--deny)">${stats.deny}</span></div><div class="stat-foot"><span class="green">${allowRatio}% allow</span> by rule count</div></div>
+      <div class="stat-card"><div class="stat-label">Blocked today</div><div class="stat-value">${stats.blocked_today}</div><div class="stat-foot">${stats.hits} matched packet evaluations</div></div>
     </div>
     <div class="overview-grid">
-      <section class="panel"><div class="panel-head"><span class="panel-title">Top matching rules</span><span class="panel-subtitle">MATCH COUNTS · TOP 8</span></div><div class="chart-area">${chart}</div></section>
-      <section class="panel"><div class="panel-head"><span class="panel-title">Recent activity</span><a class="quick-action" href="#/logs">View log →</a></div><div class="recent-list">${recent}</div></section>
+      <section class="panel"><div class="panel-head"><span class="panel-title">Top matching rules</span></div><div class="chart-area">${chart}</div></section>
+      <section class="panel"><div class="panel-head"><span class="panel-title">Recent activity</span><a class="quick-action" href="#/logs">View activity</a></div><div class="recent-list">${recent}</div></section>
     </div>
-    <div class="section-gap"><span class="muted">Shortcuts:</span> <span class="keyboard-key">/</span> search rules <span class="keyboard-key">n</span> new rule</div>`;
+    `;
 }
 
 function renderRules() {
   content.innerHTML = `${heading("Rules", "Ordered policy evaluation. The first enabled rule that matches a packet decides its action.",
-    `<button class="button primary" id="new-rule"><span class="button-icon">+</span> New rule</button>`)}
+    `<button class="button primary" id="new-rule">New rule</button>`)}
     <div class="toolbar">
       <label class="search-wrap"><span class="search-mark">⌕</span><input id="rule-search" type="search" placeholder="Search name, network, comment…" autocomplete="off"><span class="search-hint">/</span></label>
       <select id="action-filter" class="filter-select" aria-label="Filter by action"><option value="">All actions</option><option>ALLOW</option><option>DENY</option><option>REJECT</option></select>
@@ -107,13 +101,13 @@ function renderRules() {
     const body = document.getElementById("rules-body");
     body.innerHTML = rows.length ? rows.map(rule => `
       <tr draggable="true" data-rule-id="${rule.id}">
-        <td><span class="drag-handle" title="Drag to reorder">⠿</span></td>
+        <td><span class="drag-handle" title="Drag to reorder">move</span></td>
         <td class="mono muted">${String(rule.position).padStart(2, "0")}</td>
         <td><span class="rule-name">${escapeHtml(rule.name)}</span></td><td>${actionPill(rule.action)}</td>
         <td class="mono">${rule.direction}</td><td class="mono">${rule.protocol}</td>
         <td class="mono">${escapeHtml(rule.src_cidr)} <span class="faint">→</span> ${escapeHtml(rule.dst_cidr)}</td>
         <td class="mono">${escapeHtml(rule.dst_port)}</td>
-        <td><span class="hit-cell">${sparkline(rule.id)}<span class="mono">${rule.hits}</span></span></td>
+        <td><span class="hit-cell"><span class="mono">${rule.hits}</span></span></td>
         <td><button class="toggle ${rule.enabled ? "on" : ""}" data-toggle="${rule.id}" aria-label="${rule.enabled ? "Disable" : "Enable"} ${escapeHtml(rule.name)}" aria-pressed="${Boolean(rule.enabled)}"></button></td>
       </tr>`).join("") : `<tr><td colspan="10">${noData("No rules match these filters.", '<button class="button small" id="clear-filters">Clear filters</button>')}</td></tr>`;
     body.querySelectorAll("tr[data-rule-id]").forEach(row => {
@@ -242,16 +236,16 @@ function openEditor(rule = null) {
 
 function renderSimulator() {
   content.innerHTML = `${heading("Packet simulator", "Evaluate a packet against the current ruleset. No traffic is sent to a network.")}
-    <div class="sim-layout"><section class="panel"><div class="panel-head"><span class="panel-title">Packet parameters</span><span class="panel-subtitle">IPv4 ONLY</span></div>
+    <div class="sim-layout">    <section class="panel"><div class="panel-head"><span class="panel-title">Packet parameters</span><span class="panel-subtitle">IPv4 only</span></div>
       <form id="packet-form" class="form-panel" novalidate>
         <div class="field"><label for="p-src">Source address</label><input id="p-src" name="src" class="mono-input" value="192.168.10.44"><div class="field-error" data-error="src"></div></div>
         <div class="field"><label for="p-dst">Destination address</label><input id="p-dst" name="dst" class="mono-input" value="10.0.0.10"><div class="field-error" data-error="dst"></div></div>
         <div class="field-row"><div class="field"><label for="p-proto">Protocol</label><select id="p-proto" name="proto"><option>TCP</option><option>UDP</option><option>ICMP</option></select><div class="field-error" data-error="proto"></div></div>
           <div class="field"><label for="p-port">Destination port</label><input id="p-port" name="port" class="mono-input" value="443"><div class="field-error" data-error="port"></div></div></div>
         <div class="field"><label for="p-direction">Direction</label><select id="p-direction" name="direction"><option>IN</option><option>OUT</option><option>FORWARD</option></select><div class="field-error" data-error="direction"></div></div>
-        <button class="button primary" type="submit">Evaluate packet <span class="button-icon">→</span></button>
+          <button class="button primary" type="submit">Evaluate packet</button>
       </form></section>
-      <section class="panel"><div class="panel-head"><span class="panel-title">Evaluation trace</span><span class="panel-subtitle" id="trace-meta">AWAITING PACKET</span></div>
+      <section class="panel">      <div class="panel-head"><span class="panel-title">Evaluation trace</span><span class="panel-subtitle" id="trace-meta">Awaiting packet</span></div>
         <div id="simulation-result" class="form-panel">${noData("Submit a packet to see the first-match decision and rule-by-rule trace.")}</div>
       </section></div>`;
   const protocol = document.getElementById("p-proto");
@@ -266,7 +260,7 @@ function renderSimulator() {
     try {
       const result = await api("/api/simulate", { method: "POST", body: JSON.stringify(data) });
       await refresh();
-      document.getElementById("trace-meta").textContent = `${result.trace.length} RULE${result.trace.length === 1 ? "" : "S"} CHECKED`;
+      document.getElementById("trace-meta").textContent = `${result.trace.length} rule${result.trace.length === 1 ? "" : "s"} checked`;
       const bannerClass = result.action.toLowerCase() === "allow" ? "allow" : result.action.toLowerCase() === "reject" ? "reject" : "deny";
       const description = result.implicit_deny ? "No matching rule · implicit default deny" : `Matched rule ${String(result.matched_rule.position).padStart(2, "0")} · ${escapeHtml(result.matched_rule.name)}`;
       const trace = result.trace.length ? result.trace.map((item, index) => `
