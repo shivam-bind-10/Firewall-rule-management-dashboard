@@ -1,8 +1,8 @@
-# fwdash — Firewall Rule Management Dashboard
+# Firewall Rule Management Dashboard
 
-fwdash is a self-contained, simulated firewall policy console built with Flask, SQLite, and vanilla JavaScript. Manage ordered IPv4 rules, inspect packet decisions, review simulated activity, and generate iptables/nftables syntax for inspection.
+Firewall Rule Management Dashboard is a self-contained, simulated firewall policy console built with Flask, SQLite, and vanilla JavaScript. Manage ordered IPv4 rules, inspect packet decisions, review simulated activity, and generate iptables/nftables syntax for inspection.
 
-> **Simulation only:** fwdash never captures packets, changes firewall state, or executes generated commands.
+> **Simulation only:** The dashboard never captures packets, changes firewall state, or executes generated commands.
 
 ## Screenshots
 
@@ -70,6 +70,6 @@ The test suite covers invalid CIDRs and ports, ICMP port rejection, ordering, di
 
 - This is a teaching/demo simulator, not a packet filter. It has no packet capture, state tracking, NAT, IPv6, or OS firewall integration.
 - Matching covers IPv4 address/CIDR, direction, protocol, and destination port. The interface field is descriptive and is not matched against a packet interface.
-- Exported syntax assumes the target's table and chains already exist. The generated statements are examples for review and are not executed by fwdash.
+- Exported syntax assumes the target's table and chains already exist. The generated statements are examples for review and are not executed by the dashboard.
 - Seed logs are synthetic. Seed-time hit totals summarize the generated sample decisions; later hit changes come only from submitted simulations.
 - The dashboard is intended for local coursework/demo use and does not include user accounts or network-facing deployment hardening.
